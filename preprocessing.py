@@ -9,7 +9,7 @@ try:
 except ImportError:
     _MORPH = None
 
-# Резервный словарь точных нормальных форм pymorphy3 для словаря корпуса (если pymorphy3 не установлен в среде)
+
 _CORPUS_LEMMA_MAP = {
     "акустическая": "акустический", "ансамбле": "ансамбль", "ансамблевое": "ансамблевый",
     "близких": "близкий", "важны": "важный", "возбуждения": "возбуждение",
@@ -59,7 +59,6 @@ TOKEN_PATTERN = re.compile(r"[а-яёa-z0-9]+", re.IGNORECASE)
 
 
 def get_russian_stopwords() -> Set[str]:
-    """Возвращает множество русских стоп-слов из NLTK или встроенный резервный набор."""
     try:
         from nltk.corpus import stopwords
         return set(stopwords.words("russian"))
@@ -72,7 +71,6 @@ STOPWORDS_SET = get_russian_stopwords()
 
 @lru_cache(maxsize=10000)
 def lemmatize_token(token: str) -> str:
-    """Приводит токен к нормальной форме через pymorphy3 (или резервный словарь)."""
     if _MORPH is not None:
         return _MORPH.parse(token)[0].normal_form
     return _CORPUS_LEMMA_MAP.get(token, token)
@@ -99,12 +97,10 @@ def preprocess_text(
     lemmatize: bool = False,
     remove_stopwords: bool = False,
 ) -> str:
-    """Возвращает обработанную строку токенов, разделённых пробелом."""
     return " ".join(tokenize_and_process(text, lemmatize=lemmatize, remove_stopwords=remove_stopwords))
 
 
 def build_document_corpus_series(documents_df) -> List[str]:
-    """Объединяет заголовок, раздел и текст документа в единое текстовое представление."""
     combined = (
         documents_df["title"].fillna("")
         + " "
